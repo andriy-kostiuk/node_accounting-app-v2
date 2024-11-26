@@ -14,7 +14,7 @@ class Expenses {
 
     if (categories) {
       res = res.filter((expense) => {
-        return categories === expense.category;
+        return categories.includes(expense.category);
       });
     }
 

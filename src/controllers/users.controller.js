@@ -1,4 +1,5 @@
 const { usersService } = require('./../services');
+const { userSchema } = require('./../schemas');
 
 const getAll = (req, res) => {
   const users = usersService.getAll();
@@ -21,24 +22,28 @@ const getOne = (req, res) => {
 };
 
 const create = (req, res) => {
-  const { name } = req.body;
+  const { error, value } = userSchema.validate(req.body, {
+    stripUnknown: true,
+  });
 
-  if (!name) {
+  if (error) {
     res.sendStatus(400);
 
     return;
   }
 
-  const newUser = usersService.create(name);
+  const newUser = usersService.create(value);
 
   res.status(201).json(newUser);
 };
 
 const update = (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { error, value } = userSchema.validate(req.body, {
+    stripUnknown: true,
+  });
 
-  if (!name) {
+  if (error) {
     res.sendStatus(400);
 
     return;
@@ -52,7 +57,7 @@ const update = (req, res) => {
     return;
   }
 
-  const updatedUser = usersService.update(+id, { name });
+  const updatedUser = usersService.update(+id, value);
 
   res.json(updatedUser);
 };

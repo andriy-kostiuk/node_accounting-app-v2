@@ -13,8 +13,8 @@ class Users {
     return this._users.find((user) => user.id === id) || null;
   }
 
-  create(name) {
-    const newUser = { name, id: getNumberId() };
+  create(data) {
+    const newUser = { ...data, id: getNumberId() };
 
     this._users.push(newUser);
 

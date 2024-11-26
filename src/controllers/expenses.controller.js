@@ -1,5 +1,6 @@
 const { expensesService, usersService } = require('./../services');
 const { expenseSchema } = require('./../schemas');
+const joi = require('joi');
 
 const getAll = (req, res) => {
   const { userId, categories, from, to } = req.query;
@@ -32,9 +33,15 @@ const create = (req, res) => {
     stripUnknown: true,
   });
 
+  if (error) {
+    res.sendStatus(400);
+
+    return;
+  }
+
   const isUserExist = !!usersService.getById(value.userId);
 
-  if (error || !isUserExist) {
+  if (!isUserExist) {
     res.sendStatus(400);
 
     return;
@@ -71,11 +78,29 @@ const update = (req, res) => {
     return;
   }
 
-  const { error, value } = expenseSchema.validate(req.body, {
+  const keys = Object.keys(req.body);
+
+  if (keys.length === 0) {
+    res.sendStatus(400);
+
+    return;
+  }
+
+  const dynamicSchema = joi.object(
+    keys.reduce((schema, key) => {
+      if (expenseSchema.describe().keys[key]) {
+        schema[key] = expenseSchema.extract(key);
+      }
+
+      return schema;
+    }, {}),
+  );
+
+  const { error, value } = dynamicSchema.validate(req.body, {
     stripUnknown: true,
   });
 
-  if (!error) {
+  if (error) {
     res.sendStatus(400);
 
     return;
